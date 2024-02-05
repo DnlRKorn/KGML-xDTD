@@ -34,7 +34,7 @@ else
 fi
 
 # change database and database paths to current database and database path in config file
-sed -i.bk "s/dbms.active_database=.*/dbms.active_database=${database}/" ${neo4j_config}
+sed -i.bk "s/.*dbms.active_database=.*/dbms.active_database=${database}/" ${neo4j_config}
 rm -rf ${neo4j_config}.bk
 
 # stop neo4j
