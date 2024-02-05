@@ -11,26 +11,26 @@ fi
 echo "================= reading TSV files into Neo4j =================="
 if [[ "${1:-}" == "" ]]
 then
-	echo "Please specify <atabase-name> in the first parameter"
+	echo "Please specify <database-name> in the first parameter"
+	exit
 else
 	database=$1
-	exit
 fi
 
 if [[ "${2:-}" == "" ]]
 then
 	echo "Please specify the path of <path_neo4j.conf> in the second parameter"
+	exit
 else
-	neo4j_config=$2
-	exit 
+	neo4j_config=$2 
 fi
 
 if [[ "${3:-}" == "" ]]
 then
 	echo "Please specify the path of <path_tsv_folder> in the third parameter"
+	exit
 else
 	tsv_dir=$3
-	exit 
 fi
 
 # change database and database paths to current database and database path in config file
