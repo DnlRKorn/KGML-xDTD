@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     utils.set_random_seed(args.seed)
 
-    print(f"Start Loading data from {os.path.join(args.data_dir,"all_graph_nodes_info.txt")}")
+    print(f"Start Loading data from {os.path.join(args.data_dir,'all_graph_nodes_info.txt')}")
     id2index, texts = load_data(args)
     index2id = {value:key for key, value in id2index.items()}
 
