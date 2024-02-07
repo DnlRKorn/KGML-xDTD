@@ -22,7 +22,7 @@ def load_data(args):
     id2index = {}
     texts = []
 
-    with open(args.node_info, "r") as f:
+    with open(os.path.join(args.data_dir,"all_graph_nodes_info.txt"), "r") as f:
         line = f.readline()
         line = f.readline()
         index = 0
@@ -56,7 +56,7 @@ if __name__ == "__main__":
     parser.add_argument("--log_name", type=str, help="log file name", default="step5.log")
     parser.add_argument('--gpu', type=int, help='gpu device (default: 0)', default=0)
     parser.add_argument("--use_gpu", action="store_true", help="Whether use GPU or not", default=False)
-    parser.add_argument('--node_info', type=str, help='Path to a file containing node information', default='../data/all_graph_nodes_info.txt')
+    parser.add_argument('--data_dir', type=str, help='Path to a file containing node information', default='../data')
     parser.add_argument('--seed', type=int, help='Random seed (default: 1023)', default=1023)
     parser.add_argument("--batch_size", type=int, help="Batch size of bert embedding calculation", default=0)
     parser.add_argument("--output_folder", type=str, help="The path of output folder", default="../data")
@@ -70,7 +70,7 @@ if __name__ == "__main__":
 
     utils.set_random_seed(args.seed)
 
-    print(f"Start Loading data from {args.node_info}")
+    print(f"Start Loading data from {os.path.join(args.data_dir,"all_graph_nodes_info.txt")}")
     id2index, texts = load_data(args)
     index2id = {value:key for key, value in id2index.items()}
 
