@@ -58,11 +58,9 @@ if __name__ == "__main__":
     parser.add_argument("--use_gpu", action="store_true", help="Whether use GPU or not", default=False)
     parser.add_argument('--data_dir', type=str, help='Path to a file containing node information', default='../data')
     parser.add_argument('--seed', type=int, help='Random seed (default: 1023)', default=1023)
-    parser.add_argument("--batch_size", type=int, help="Batch size of bert embedding calculation", default=0)
+    parser.add_argument("--batch_size", type=int, help="Batch size of bert embedding calculation", default=10)
     parser.add_argument("--output_folder", type=str, help="The path of output folder", default="../data")
     args = parser.parse_args()
-
-    args.batch_size = args.batch_size if args.batch_size else 10
 
     logger = utils.get_logger(os.path.join(args.log_dir,args.log_name))
     args.logger = logger
