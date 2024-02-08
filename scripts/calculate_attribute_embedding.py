@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
     ori_embedding = np.zeros([len(texts), 768])
 
-    print(f"Calculating BERT embedding on {args.device} with batch size: {args.batch_size}")
+    print(f"Calculating BERT embedding on device: {args.device}; number of texts: {len(texts)}; and batch size: {args.batch_size}")
 
     start_time = time.time()
 
