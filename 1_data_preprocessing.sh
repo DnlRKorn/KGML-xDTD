@@ -92,26 +92,29 @@ python ${work_folder}/scripts/generate_tp_tn_pairs.py --log_dir ${work_folder}/l
                                                       --output_folder ${work_folder}/data
 
 ## step3: preprocess data
-echo "running step3: preprocess data"
+echo "Running step3.1: preprocess_data.py"
 python ${work_folder}/scripts/preprocess_data.py --log_dir ${work_folder}/log_folder \
                                                  --log_name step3_1.log \
                                                  --data_dir ${work_folder}/data \
                                                  --output_folder ${work_folder}/data
 
+echo "Running step3.2: process_drugbank_action_desc.py"
 python ${work_folder}/scripts/process_drugbank_action_desc.py --log_dir ${work_folder}/log_folder \
                                                               --log_name step3_2.log \
                                                               --data_dir ${work_folder}/data ## this step needs to request a drugbank academic license to download the drugbank.xml file and then put it into the '${work_folder}/data' folder
 
+echo "Running step3.3: integrate_drugbank_and_molepro_data.py"
 python ${work_folder}/scripts/integrate_drugbank_and_molepro_data.py --log_dir ${work_folder}/log_folder \
                                                                      --log_name step3_3.log \
                                                                      --data_dir ${work_folder}/data
-
+echo "Running step 3.4: check_reachable.py"
 python ${work_folder}/scripts/check_reachable.py --log_dir ${work_folder}/log_folder \
                                                  --log_name step3_4.log \
                                                  --data_dir ${work_folder}/data \
                                                  --max_path ${max_path} \
                                                  --bandwidth ${max_neighbor}
 
+echo "Running step 3.5: generate_expert_paths.py"
 python ${work_folder}/scripts/generate_expert_paths.py --log_dir ${work_folder}/log_folder \
                                                        --log_name step3_5.log \
                                                        --data_dir ${work_folder}/data \
