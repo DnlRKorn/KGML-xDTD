@@ -183,7 +183,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_dir', type=str, help='Full path of data folder', default='../data')
     parser.add_argument("--batchsize", type=int, help="Batch Size", default=50000)
     parser.add_argument("--process", type=int, help="Use number of processes to run the program", default=50)
-    parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://molepro-trapi.transltr.io/molepro/trapi/v1.3')
+    parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://molepro-trapi.transltr.io/molepro/trapi/v1.4')
     parser.add_argument('--output_folder', type=str, help='The name of output directory for storing results', default='expert_path_files')
     args = parser.parse_args()
 
