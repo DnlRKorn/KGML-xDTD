@@ -107,6 +107,8 @@ echo "Running step3.3: integrate_drugbank_and_molepro_data.py"
 python ${work_folder}/scripts/integrate_drugbank_and_molepro_data.py --log_dir ${work_folder}/log_folder \
                                                                      --log_name step3_3.log \
                                                                      --data_dir ${work_folder}/data
+								     --output_folder ${work_folder}/data
+
 echo "Running step 3.4: check_reachable.py"
 python ${work_folder}/scripts/check_reachable.py --log_dir ${work_folder}/log_folder \
                                                  --log_name step3_4.log \
