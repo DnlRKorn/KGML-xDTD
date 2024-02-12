@@ -184,7 +184,7 @@ if __name__ == '__main__':
     parser.add_argument("--batchsize", type=int, help="Batch Size", default=50000)
     parser.add_argument("--process", type=int, help="Use number of processes to run the program", default=50)
     parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://molepro-trapi.transltr.io/molepro/trapi/v1.3')
-    parser.add_argument('--outdir_name', type=str, help='The name of output directory for storing results', default='expert_path_files')
+    parser.add_argument('--output_folder', type=str, help='The name of output directory for storing results', default='expert_path_files')
     args = parser.parse_args()
 
 
@@ -192,7 +192,7 @@ if __name__ == '__main__':
     logger.info(args)
 
 
-    if not os.path.exists(os.path.join(args.data_dir, args.outdir_name, 'all_drugs.txt')):
+    if not os.path.exists(os.path.join(args.data_dir, args.output_folder, 'all_drugs.txt')):
         neo4j_bolt = os.getenv('neo4j_bolt')
         neo4j_username = os.getenv('neo4j_username')
         neo4j_password = os.getenv('neo4j_password')
@@ -201,20 +201,20 @@ if __name__ == '__main__':
         conn = utils.Neo4jConnection(uri=neo4j_bolt, user=neo4j_username, pwd=neo4j_password)
         res = conn.query(f"match (n) where n.category='biolink:SmallMolecule' or n.category='biolink:Drug' return distinct n.id, n.category, n.equivalent_curies")    
         res.columns = ['id','category','equivalent_curies']
-        res.to_csv(os.path.join(args.data_dir, args.outdir_name, 'all_drugs.txt'), sep='\t', index=None)
+        res.to_csv(os.path.join(args.data_dir, args.output_folder, 'all_drugs.txt'), sep='\t', index=None)
     else:
-        res = pd.read_csv(os.path.join(args.data_dir, args.outdir_name, 'all_drugs.txt'), sep='\t', header=0)
+        res = pd.read_csv(os.path.join(args.data_dir, args.output_folder, 'all_drugs.txt'), sep='\t', header=0)
         res = res.apply(lambda row: [row[0], row[1], eval(row[2])], axis=1, result_type='expand')
         res.columns = ['id','category','equivalent_curies']
 
     ## read drugbank processed data
-    file_path = os.path.join(args.data_dir, args.outdir_name, 'p_expert_paths.txt')
+    file_path = os.path.join(args.data_dir, args.output_folder, 'p_expert_paths.txt')
     p_expert_paths = pd.read_csv(file_path, sep='\t', header=None)
     p_expert_paths = p_expert_paths.loc[~p_expert_paths[2].isna(),:]
     p_expert_paths.columns = ['drugbankid', 'subject', 'object']
 
     ## query molepro (Molecular Data Provider) API
-    if not os.path.exists(os.path.join(args.data_dir, args.outdir_name, 'molepro_df_backup.txt')):
+    if not os.path.exists(os.path.join(args.data_dir, args.output_folder, 'molepro_df_backup.txt')):
         # api_res = requests.get(f'{args.molepro_api_link}/meta_knowledge_graph')
         # if api_res.status_code == 200:
         #     molepro_meta_kg = api_res.json()
@@ -262,4 +262,4 @@ if __name__ == '__main__':
     combined_table.loc[(~combined_table.loc[:,'pmid'].isna()) & (combined_table.loc[:,'drugbankid'].isna()),'supported_sources'] = 'molepro'
 
     ## output the results
-    combined_table.to_csv(os.path.join(args.data_dir, args.outdir_name, 'p_expert_paths_combined.txt'), sep='\t', index=None)
+    combined_table.to_csv(os.path.join(args.data_dir, args.output_folder, 'p_expert_paths_combined.txt'), sep='\t', index=None)
