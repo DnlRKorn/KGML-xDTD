@@ -107,9 +107,22 @@ from tqdm import tqdm, trange
 #         asyncio.run(self._get_data(param_list))
 
 def extract_drug_target_pairs_from_trapi_response(kg, pmid_support=True):
+    #This had to be updated to reflect the new trapi 1.4 version. In this version the 
+    # PMID is stored as part of a list of values in the ['edges'][KEY]['attributes']['value']
     if pmid_support:
-        res = [(kg['edges'][key]['subject'], kg['edges'][key]['object'], attr['value']) for key in kg['edges'] for attr in kg['edges'][key]['attributes'] if attr['original_attribute_name']=='publication']
-        return pd.DataFrame(res, columns=['subject','object','pmid'])
+        results = []
+        for key in kg['edges']:
+            #print(key)
+            sub = kg['edges'][key]['subject']
+            obj = kg['edges'][key]['object']
+            pmid = ""
+            for attribute in kg['edges'][key]['attributes']:
+                if(attribute["attribute_type_id"]=="biolink:publications"):
+                    for val in attribute['value']:
+                        if("PMID:" in val):
+                            pmid = int(val.replace("PMID:",""))
+            results.append((sub,obj,pmid))
+        return pd.DataFrame(results, columns=['subject','object','pmid'])
     else:
         res = [(kg['edges'][key]['subject'], kg['edges'][key]['object']) for key in kg['edges']]
         return pd.DataFrame(res, columns=['subject','object'])
@@ -244,9 +257,10 @@ if __name__ == '__main__':
     for index in range(len(molepro_df)):
         source, target, pmid = molepro_df.loc[index,'subject'], molepro_df.loc[index,'object'], molepro_df.loc[index,'pmid']
         if (source, target) not in temp_dict:
-            temp_dict[(source, target)] = [pmid]
+            if(pmid!=None): temp_dict[(source, target)] = [pmid]
+            else: temp_dict[(source, target)] = []
         else:
-            temp_dict[(source, target)].append(pmid)
+            if(pmid!=None): temp_dict[(source, target)].append(pmid)
     molepro_df = pd.DataFrame([(key[0], key[1], value) for key, value in temp_dict.items()])
     molepro_df.columns = ['subject','object','pmid']
 
