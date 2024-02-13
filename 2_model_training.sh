@@ -75,16 +75,22 @@ then
 fi
 
 ## step5: generate node-attribute embedding via PubMedBert model
+echo "Running step 5: calculate_attribute_embedding.py"
 python ${work_folder}/scripts/calculate_attribute_embedding.py --log_dir ${work_folder}/log_folder \
                                                                --log_name step5.log \
                                                                --data_dir ${work_folder}/data \
                                                                --use_gpu \
                                                                --gpu ${gpu} \
                                                                --output_folder ${work_folder}/data
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 
 # step6: generate graphsage input files
-echo 'running step6: generate graphsage input files'
+echo 'running step6.1: graphsage_data_generation.py'
 python ${work_folder}/scripts/graphsage_data_generation.py --log_dir ${work_folder}/log_folder \
                                                            --log_name step6_1.log \
                                                            --data_dir ${work_folder}/data \
@@ -92,7 +98,13 @@ python ${work_folder}/scripts/graphsage_data_generation.py --log_dir ${work_fold
                                                            --process 80 \ ## change it based on your computer CPU cores
                                                            --validation_percent 0.3 \
                                                            --output_folder ${work_folder}/data/graphsage_input
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
+echo 'running step6.2: generate_random_walk.py'
 python ${work_folder}/scripts/generate_random_walk.py --log_dir ${work_folder}/log_folder \
                                                       --log_name step6_2.log \
                                                       --Gjson ${work_folder}/data/graphsage_input/data-G.json \
@@ -101,6 +113,11 @@ python ${work_folder}/scripts/generate_random_walk.py --log_dir ${work_folder}/l
                                                       --batch_size 200000 \
                                                       --process 200 \ ## change it based on your computer CPU cores
                                                       --output_folder ${work_folder}/data/graphsage_input
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 # ## step7: generate graphsage embedding
 echo 'running step7: generate graphsage embedding'
@@ -111,6 +128,7 @@ ppath=~/anaconda3/envs/graphsage_p2.7env/bin/python ## please change this path t
 ln -s ${work_folder}/scripts/GraphSAGE/graphsage
 
 ## run graphsage unsupervised model
+echo 'running step7.1 graphsage.unsupervised_train'
 ${ppath} -m graphsage.unsupervised_train --train_prefix ${work_folder}/data/graphsage_input/data \
                                          --model_size 'big' \
                                          --learning_rate 0.001 \
@@ -124,42 +142,70 @@ ${ppath} -m graphsage.unsupervised_train --train_prefix ${work_folder}/data/grap
                                          --validate_iter 100 \
                                          --batch_size 512 \
                                          --max_degree 96
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 ## step7: transform the GraphSage results to .emb format
-echo 'running step7: transform the GraphSage results to .emb format'
+echo 'running step7.2: transform the GraphSage results to .emb format transform_format.py'
 python ${work_folder}/scripts/transform_format.py --log_dir ${work_folder}/log_folder \
                                                   --log_name step7.log \
                                                   --data_dir ${work_folder}/data \
                                                   --input ${work_folder}/unsup-graphsage_input/graphsage_mean_big_0.001000
 
 ## step8: pretrain RF model
-echo 'running step8: pretrain RF model'
+echo 'running step8.1: pretrain RF model run_RF_model_2class.py'
 python ${work_folder}/scripts/run_RF_model_2class.py --log_dir ${work_folder}/log_folder \
                                                      --log_name step8_rf_2class.log \
                                                      --data_dir ${work_folder}/data \
                                                      --pair_emb ${pair_emb_method} \
                                                      --output_folder ${work_folder}/models
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
+echo 'running step8.2: run_RF_model_3class.py'
 python ${work_folder}/scripts/run_RF_model_3class.py --log_dir ${work_folder}/log_folder \
                                                      --log_name step8_rf_3class.log \
                                                      --data_dir ${work_folder}/data \
                                                      --pair_emb ${pair_emb_method} \
                                                      --output_folder ${work_folder}/models
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
+echo 'running step8.3: run_logistic_model_2class.py'
 python ${work_folder}/scripts/run_logistic_model_2class.py --log_dir ${work_folder}/log_folder \
                                                            --log_name step8_logistic_2class.log \
                                                            --data_dir ${work_folder}/data \
                                                            --pair_emb ${pair_emb_method} \
                                                            --output_folder ${work_folder}/models
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
+echo 'running step8.4: run_svm_model_2class.py'
 python ${work_folder}/scripts/run_svm_model_2class.py --log_dir ${work_folder}/log_folder \
                                                       --log_name step8_svm_2class.log \
                                                       --data_dir ${work_folder}/data \
                                                       --pair_emb ${pair_emb_method} \
                                                       --output_folder ${work_folder}/models
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 # step9: generate pre-calculated transition file for demonstration paths
-echo 'running step9: generate precalculated transition file for demonstration paths'
+echo 'running step9: generate precalculated transition file for demonstration paths generate_expert_trans.py'
 python ${work_folder}/scripts/generate_expert_trans.py --log_dir ${work_folder}/log_folder \
                                                        --log_name step9.log \
                                                        --data_dir ${work_folder}/data \
@@ -167,9 +213,14 @@ python ${work_folder}/scripts/generate_expert_trans.py --log_dir ${work_folder}/
                                                        --max_path ${max_path} \
                                                        --state_history ${state_history} \
                                                        --expert_trains_file_name 'train_expert_transitions_history'${state_history}'.pkl'
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 # step10: pretrained ActorCritic model by the behavior cloning
-echo 'running step10: pretrained ActorCritic model by the behavior cloning'
+echo 'running step10: pretrained ActorCritic model by the behavior cloning; run_pretrain_ac_model.py'
 python ${work_folder}/scripts/run_pretrain_ac_model.py --log_dir ${work_folder}/log_folder \
                                                        --log_name step10.log \
                                                        --data_dir ${work_folder}/data \
@@ -191,9 +242,14 @@ python ${work_folder}/scripts/run_pretrain_ac_model.py --log_dir ${work_folder}/
                                                        --lr ${learning_rate} \
                                                        --scheduler_patience 5 \
                                                        --scheduler_factor 0.1
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 # step11: train Adversarial ActorCritic model
-echo 'running step11: train Adversarial ActorCritic model'
+echo 'running step11: train Adversarial ActorCritic model; run_adac_model.py'
 python ${work_folder}/scripts/run_adac_model.py --log_dir ${work_folder}/log_folder \
                                                 --log_name step11.log \
                                                 --data_dir ${work_folder}/data \
@@ -221,6 +277,10 @@ python ${work_folder}/scripts/run_adac_model.py --log_dir ${work_folder}/log_fol
                                                 --ac_lr ${learning_rate} \
                                                 --disc_lr ${learning_rate} \
                                                 --metadisc_lr ${learning_rate}
-
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 # Note that some baseline models are impletmented independently, please go to ./baselines folder to find the specific baseline models that we compare in our paper. Under each baseline model folder, there is a "main.sh" file. Please follow the steps within "main.sh" file to implement such baseline model.
