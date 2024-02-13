@@ -106,61 +106,55 @@ from tqdm import tqdm, trange
 #         ## start the asyncio program
 #         asyncio.run(self._get_data(param_list))
 
+def extract_drug_target_pairs_from_trapi_response(kg, pmid_support=True):
+    if pmid_support:
+        res = [(kg['edges'][key]['subject'], kg['edges'][key]['object'], attr['value']) for key in kg['edges'] for attr in kg['edges'][key]['attributes'] if attr['original_attribute_name']=='publication']
+        return pd.DataFrame(res, columns=['subject','object','pmid'])
+    else:
+        res = [(kg['edges'][key]['subject'], kg['edges'][key]['object']) for key in kg['edges']]
+        return pd.DataFrame(res, columns=['subject','object'])
 
-def get_melepro_data(params: tuple):
-
-    def _generate_query_graph(curie_id, category):
-        if type(curie_id) is str:
-            query_id = [curie_id]
-        else:
-            query_id = curie_id
-
-        query_graph = {
-            "message": {
-                "query_graph": {
-                "edges": {
-                    "e00": {
-                    "subject": "n00",
-                    "predicates": [
-                        "biolink:affects",
-                        "biolink:interacts_with"
-                    ],
-                    "object": "n01"
-                    }
-                },
-                "nodes": {
-                    "n00": {
-                    "ids": query_id,
-                    "categories": [
-                        category
-                    ]
-                    },
-                    "n01": {
-                    "categories": [
-                        "biolink:Gene",
-                        "biolink:Protein"
-                    ]
-                    }
+def generate_query_graph_for_molepro(curie_id, category):
+    if type(curie_id) is str:
+        query_id = [curie_id]
+    else:
+        query_id = curie_id
+    query_graph = {
+        "message": {
+            "query_graph": {
+            "edges": {
+                "e00": {
+                "subject": "n00",
+                "predicates": [
+                    "biolink:affects",
+                    "biolink:interacts_with"
+                ],
+                "object": "n01"
                 }
+            },
+            "nodes": {
+                "n00": {
+                "ids": query_id,
+                "categories": [
+                    category
+                ]
+                },
+                "n01": {
+                "categories": [
+                    "biolink:Gene",
+                    "biolink:Protein"
+                ]
                 }
             }
+            }
         }
+    }
+    return query_graph
 
-        return query_graph
-
-    def _extract_drug_target_pairs_from_kg(kg, pmid_support=True):
-
-        if pmid_support:
-            res = [(kg['edges'][key]['subject'], kg['edges'][key]['object'], attr['value']) for key in kg['edges'] for attr in kg['edges'][key]['attributes'] if attr['original_attribute_name']=='publication']
-            return pd.DataFrame(res, columns=['subject','object','pmid'])
-        else:
-            res = [(kg['edges'][key]['subject'], kg['edges'][key]['object']) for key in kg['edges']]
-            return pd.DataFrame(res, columns=['subject','object'])
-
-
+def get_melepro_data(params: tuple):
     curie_id, category, molepro_api_link = params
     try:
-        request_body = _generate_query_graph(curie_id, category)
+        request_body = generate_query_graph_for_molepro(curie_id, category)
         resp = requests.post(f'{molepro_api_link}/query', json = request_body, headers={'accept': 'application/json'})
     except Exception:
         traceback.print_exc()
@@ -172,7 +166,7 @@ def get_melepro_data(params: tuple):
         return pd.DataFrame([], columns=['subject','object','pmid'])
 
     resp_res = resp.json()
-    temp_pairs = _extract_drug_target_pairs_from_kg(resp_res['message']['knowledge_graph'])
+    temp_pairs = extract_drug_target_pairs_from_trapi_response(resp_res['message']['knowledge_graph'])
 
     return temp_pairs
 
