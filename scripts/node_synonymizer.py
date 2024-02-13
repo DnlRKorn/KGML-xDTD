@@ -1840,8 +1840,9 @@ class NodeSynonymizer:
         batches = []
         results = {}
 
-        # Set up the category manager
-        category_manager = CategoryManager()
+        # Set up the category manager. Only if it's needed.
+        if(return_all_categories):
+            category_manager = CategoryManager()
 
         # Make sets of comma-separated list strings for the curies and set up the results dict with all the input values
         uc_curies = []
