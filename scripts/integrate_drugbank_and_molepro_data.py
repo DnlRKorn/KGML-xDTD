@@ -178,7 +178,7 @@ if __name__ == '__main__':
     parser.add_argument("--batchsize", type=int, help="Batch Size", default=50000)
     parser.add_argument("--process", type=int, help="Use number of processes to run the program", default=50)
     parser.add_argument('--molepro_api_link', type=str, help='API link of Molecular Data Provider', default='https://molepro-trapi.transltr.io/molepro/trapi/v1.4')
-    parser.add_argument('--output_folder', type=str, help='The name of output directory for storing results', default='expert_path_files')
+    parser.add_argument('--output_folder', type=str, help='The name of output directory for storing results. This will be placed within the args.data_dir directory.', default='expert_path_files')
     args = parser.parse_args()
 
 
@@ -234,11 +234,11 @@ if __name__ == '__main__':
                 temp_molepro_df = pd.concat(out_res).reset_index(drop=True)
                 molepro_df = pd.concat([molepro_df,temp_molepro_df]).reset_index(drop=True)
                 # save intermediate results
-                molepro_df.to_csv(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', index=None)
+                molepro_df.to_csv(os.path.join(args.data_dir, args.output_folder, 'molepro_df_backup.txt'), sep='\t', index=None)
 
-        molepro_df.to_csv(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', index=None)
+        molepro_df.to_csv(os.path.join(args.data_dir, args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', index=None)
     else:
-        molepro_df = pd.read_csv(os.path.join(args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', header=0)
+        molepro_df = pd.read_csv(os.path.join(args.data_dir, args.output_folder, 'expert_path_files', 'molepro_df_backup.txt'), sep='\t', header=0)
     
     temp_dict = dict()
     for index in range(len(molepro_df)):
