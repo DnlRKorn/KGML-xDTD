@@ -75,9 +75,14 @@ fi
 
 ## step1: download graph from neo4j database
 echo "running step1: download graph from neo4j database"
-python ${work_folder}/scripts/download_data_from_neo4j.py --log_dir ${work_folder}/log_folder \ 
+python ${work_folder}/scripts/download_data_from_neo4j.py --log_dir ${work_folder}/log_folder \
                                                           --log_name step1.log \
                                                           --output_folder ${work_folder}/data
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 ## step2: generate tp and tn
 echo 'running step2: generate tp and tn edges'
@@ -90,6 +95,11 @@ python ${work_folder}/scripts/generate_tp_tn_pairs.py --log_dir ${work_folder}/l
                                                       --tp ${work_folder}/data/training_data/mychem_tp.txt ${work_folder}/data/training_data/semmed_tp.txt ${work_folder}/data/training_data/ndf_tp.txt ${work_folder}/data/training_data/repoDB_tp.txt \
                                                       --tn ${work_folder}/data/training_data/mychem_tn.txt ${work_folder}/data/training_data/semmed_tn.txt ${work_folder}/data/training_data/ndf_tn.txt ${work_folder}/data/training_data/repoDB_tn.txt \
                                                       --output_folder ${work_folder}/data
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 ## step3: preprocess data
 echo "Running step3.1: preprocess_data.py"
@@ -97,17 +107,32 @@ python ${work_folder}/scripts/preprocess_data.py --log_dir ${work_folder}/log_fo
                                                  --log_name step3_1.log \
                                                  --data_dir ${work_folder}/data \
                                                  --output_folder ${work_folder}/data
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 echo "Running step3.2: process_drugbank_action_desc.py"
 python ${work_folder}/scripts/process_drugbank_action_desc.py --log_dir ${work_folder}/log_folder \
                                                               --log_name step3_2.log \
                                                               --data_dir ${work_folder}/data ## this step needs to request a drugbank academic license to download the drugbank.xml file and then put it into the '${work_folder}/data' folder
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 echo "Running step3.3: integrate_drugbank_and_molepro_data.py"
 python ${work_folder}/scripts/integrate_drugbank_and_molepro_data.py --log_dir ${work_folder}/log_folder \
                                                                      --log_name step3_3.log \
                                                                      --data_dir ${work_folder}/data
 								     --output_folder ${work_folder}/data
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 echo "Running step 3.4: check_reachable.py"
 python ${work_folder}/scripts/check_reachable.py --log_dir ${work_folder}/log_folder \
@@ -115,6 +140,11 @@ python ${work_folder}/scripts/check_reachable.py --log_dir ${work_folder}/log_fo
                                                  --data_dir ${work_folder}/data \
                                                  --max_path ${max_path} \
                                                  --bandwidth ${max_neighbor}
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 echo "Running step 3.5: generate_expert_paths.py"
 python ${work_folder}/scripts/generate_expert_paths.py --log_dir ${work_folder}/log_folder \
@@ -123,6 +153,11 @@ python ${work_folder}/scripts/generate_expert_paths.py --log_dir ${work_folder}/
                                                        --max_path ${max_path} \
                                                        --bandwidth ${max_neighbor} \
                                                        --ngd_db_path ${work_folder}/bkg_rtxkg2c_v2.7.3/relevant_dbs/curie_to_pmids_v1.0_KG2.7.3.sqlite
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
 
 ## step4: generate the 'treat' and 'not treat' train, val and test dataset
 echo "running step4: generate the 'treat' and 'not treat' train, val and test data set"
@@ -131,5 +166,8 @@ python ${work_folder}/scripts/split_data_train_val_test.py --log_dir ${work_fold
                                                            --data_dir ${work_folder}/data \
                                                            --n_random_test 500 \
                                                            --n_random 30 --train_val_test_size "[0.8, 0.1, 0.1]" 
-
-
+if [ $? -ne 0 ]
+then
+    echo "The last step failed."
+    exit
+fi
