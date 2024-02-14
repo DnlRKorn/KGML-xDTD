@@ -191,6 +191,11 @@ class BiolinkHelper:
                               "aspects": dict(), "directions": dict()}
         # Grab the relevant Biolink yaml file
         biolink_url = f"https://raw.githubusercontent.com/biolink/biolink-model/{self.biolink_version}/biolink-model.yaml"
+        #Daniel Korn Feburary 2024; the most recent version of biolink causes a conflict with the code. I got a version from 
+        #around the time xDTD was published and am hard linking to that. TODO someone smarter than I should make this a 
+        # dynamic system again (but also changing the internals of the yaml spec so there was a conflict was ungood).
+        biolink_url = "https://raw.githubusercontent.com/biolink/biolink-model/24b5e9d34241b0f36397f282f18f14fcd3dd73bf/biolink-model.yaml"
+        
         response = requests.get(biolink_url, timeout=10)
         if response.status_code != 200:  # Sometimes Biolink's tags start with 'v', so try that
             biolink_url = f"https://raw.githubusercontent.com/biolink/biolink-model/v{self.biolink_version}/biolink-model.yaml"
