@@ -190,11 +190,11 @@ class BiolinkHelper:
                               "predicate_mixins": dict(), "category_mixins": dict(),
                               "aspects": dict(), "directions": dict()}
         # Grab the relevant Biolink yaml file
-        response = requests.get(f"https://raw.githubusercontent.com/biolink/biolink-model/{self.biolink_version}/biolink-model.yaml",
-                                timeout=10)
+        biolink_url = f"https://raw.githubusercontent.com/biolink/biolink-model/{self.biolink_version}/biolink-model.yaml"
+        response = requests.get(biolink_url, timeout=10)
         if response.status_code != 200:  # Sometimes Biolink's tags start with 'v', so try that
-            response = requests.get(f"https://raw.githubusercontent.com/biolink/biolink-model/v{self.biolink_version}/biolink-model.yaml",
-                                    timeout=10)
+            biolink_url = f"https://raw.githubusercontent.com/biolink/biolink-model/v{self.biolink_version}/biolink-model.yaml"
+            response = requests.get(biolink_url, timeout=10)
 
         if response.status_code == 200:
             # Build predicate, category, and mixin trees from the Biolink yaml
